@@ -5,7 +5,7 @@
     // ============================================
     
 const CONFIG = {
-    // progressDuration: 2500,
+    // progressDuration: 500,
             redirectDelay: 50, // 0.05 seconds
 
     // Use your Pages API endpoint (not the Worker directly)
@@ -436,6 +436,7 @@ function getTarget() {
         init();
     }
 })();
+
 
 
 
