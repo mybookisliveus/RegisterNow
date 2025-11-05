@@ -1,21 +1,19 @@
+// User Engagement Modal with Server-Side Redirect
 (function() {
     // ============================================
-    // CONFIGURATION - External
+    // CONFIGURATION
     // ============================================
     
-    // Check if external config is loaded
-    if (typeof MODAL_CONFIG === 'undefined') {
-        console.error('⚠️ Configuration not loaded! Please include config.js before modal3.js');
-        return;
-    }
-    
-    // Use configuration
-    const CONFIG = MODAL_CONFIG;
+    const CONFIG = {
+        progressDuration: 2500,
+        // Worker endpoint - yeh automatically handle ho jayega
+        redirectURL: '/api/redirect?campaign=welcome'
+    };
     
     function getTarget() {
-        return CONFIG.base + CONFIG.path + CONFIG.params;
+        return CONFIG.redirectURL;
     }
-   
+    
     // ============================================
 
     // Inject CSS styles
@@ -28,26 +26,28 @@
         }
         
         body {
-font-family: "Montserrat", sans-serif;
-font-weight: bold;            margin: 0;
+            font-family: "Montserrat", sans-serif;
+            font-weight: bold;
+            margin: 0;
             padding: 0;
         }
         
-     .popup-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.2s ease;
-}
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        
         .popup-overlay.active {
             display: flex;
         }
@@ -62,7 +62,7 @@ font-weight: bold;            margin: 0;
             border-radius: 20px;
             padding: 2rem;
             max-width: 500px;
-            width: 100%;
+            width: 90%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             position: relative;
             transform: scale(0.95);
@@ -308,7 +308,7 @@ font-weight: bold;            margin: 0;
 
     // Inject Google Fonts
     const fontLink = document.createElement('link');
-fontLink.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
@@ -323,12 +323,9 @@ fontLink.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@700&di
                     <span class="version-badge">Secure Access</span>
                 </div>
                 
- <div class="popup-content">
-    <p>We're preparing your personalized experience. Be On Anything.
-Anywhere. Anytime.
-New Customers Only</p>
-    <p style="font-size: 14px; color: #888; margin-top: 10px;">🔒 Secure Connection | ✓ Verified Platform</p>
-</div>
+                <div class="popup-content">
+                    <p>We're preparing your personalized experience. Be On Anything. Anywhere. Anytime. New Customers Only</p>
+                </div>
                 
                 <div class="verification-status" id="verificationStatus">
                     <div class="status-icon"></div>
@@ -355,8 +352,8 @@ New Customers Only</p>
     // Initialize
     function init() {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-document.body.style.overflow = 'hidden';
-document.body.classList.add('modal-active');
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-active');
 
         const overlay = document.getElementById('popupOverlay');
         const closeBtn = document.getElementById('closeBtn');
@@ -401,20 +398,21 @@ document.body.classList.add('modal-active');
             }, interval);
         }
 
-       function closePopup() {
-    overlay.classList.remove('active');
-    document.body.style.overflow = 'auto';
-    document.body.classList.remove('modal-active');
-}
+        function closePopup() {
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-active');
+        }
 
-        // Continue button -to destination
-      continueBtn.addEventListener('click', function() {
-    // overlay.classList.remove('active');
-    document.body.style.overflow = 'auto';
-    document.body.classList.remove('modal-active');
-    
-    window.location.href = getTarget();
-});
+        // Continue button - redirect to Worker endpoint
+        continueBtn.addEventListener('click', function() {
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-active');
+            
+            window.location.href = getTarget();
+        });
+        
         closeBtn.addEventListener('click', closePopup);
 
         overlay.addEventListener('click', function(e) {
