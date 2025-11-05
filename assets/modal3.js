@@ -4,15 +4,17 @@
     // CONFIGURATION
     // ============================================
     
-    const CONFIG = {
-        progressDuration: 2500,
-        // Worker endpoint - yeh automatically handle ho jayega
-        redirectURL: '/api/redirect?campaign=welcome'
-    };
-    
-    function getTarget() {
-        return CONFIG.redirectURL;
-    }
+  const CONFIG = {
+    progressDuration: 2500,
+    // This will work on any domain
+    redirectURL: '/api/?campaign=welcome'
+};
+
+function getTarget() {
+    // Get current domain and build full URL
+    const currentDomain = window.location.origin;
+    return currentDomain + CONFIG.redirectURL;
+}
     
     // ============================================
 
@@ -434,3 +436,4 @@
         init();
     }
 })();
+
