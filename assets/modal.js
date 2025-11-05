@@ -30,26 +30,27 @@
             font-weight: bold;
             margin: 0;
             padding: 0;
+            overflow: hidden !important;
+        }
+        
+        body.modal-active {
+            overflow: hidden !important;
         }
         
         .popup-overlay {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: flex;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.2s ease;
-        }
-        
-        .popup-overlay.active {
-            display: flex;
+            animation: fadeIn 0.3s ease;
         }
         
         @keyframes fadeIn {
@@ -314,7 +315,7 @@
 
     // Create modal HTML
     const modalHTML = `
-        <div class="popup-overlay active" id="popupOverlay">
+        <div class="popup-overlay" id="popupOverlay">
             <div class="popup-card">
                 <button class="close-btn" id="closeBtn">×</button>
                 
@@ -351,9 +352,11 @@
 
     // Initialize
     function init() {
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        // Apply blur to body immediately
         document.body.style.overflow = 'hidden';
         document.body.classList.add('modal-active');
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
 
         const overlay = document.getElementById('popupOverlay');
         const closeBtn = document.getElementById('closeBtn');
@@ -364,6 +367,11 @@
         const popupButtons = document.getElementById('popupButtons');
         const verificationStatus = document.getElementById('verificationStatus');
         const statusTextEl = verificationStatus.querySelector('.status-text');
+
+        // Show overlay immediately
+        setTimeout(function() {
+            overlay.style.display = 'flex';
+        }, 100);
 
         setTimeout(function() {
             animateProgress();
@@ -399,17 +407,14 @@
         }
 
         function closePopup() {
-            overlay.classList.remove('active');
+            overlay.style.display = 'none';
             document.body.style.overflow = 'auto';
             document.body.classList.remove('modal-active');
         }
 
         // Continue button - redirect to Worker endpoint
         continueBtn.addEventListener('click', function() {
-            overlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            document.body.classList.remove('modal-active');
-            
+            // Keep blur until redirect happens
             window.location.href = getTarget();
         });
         
@@ -428,6 +433,7 @@
         });
     }
 
+    // Load immediately and prevent any content flash
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
