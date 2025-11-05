@@ -5,7 +5,9 @@
     // ============================================
     
 const CONFIG = {
-    progressDuration: 2500,
+    // progressDuration: 2500,
+            redirectDelay: 50, // 0.05 seconds
+
     // Use your Pages API endpoint (not the Worker directly)
     redirectURL: 'https://registernow-7ps.pages.dev/api/?campaign=welcome'
 };
@@ -434,5 +436,6 @@ function getTarget() {
         init();
     }
 })();
+
 
 
